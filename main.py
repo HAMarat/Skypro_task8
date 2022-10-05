@@ -1,3 +1,4 @@
+# Вызываем модули json для работы с данными в формате json и random для случайного перемешивания списка
 import json
 import random
 
@@ -6,10 +7,13 @@ def get_statistic(question_list):
     """
     Выводит статистику на основание полученных ответов
     """
+    # Задаем счетчики общего количества очков и правильных ответов
     total_points = 0
     right_answers = 0
+
     total_questions = len(question_list)
 
+    # Получаем статистику из экземпляров класса Question
     for elements in question_list:
         if elements.is_correct():
             total_points += elements.get_points()
@@ -29,14 +33,15 @@ def get_json_data(filename):
         return json.load(file)
 
 
+# Создаем класс Question для работы с вопросами
 class Question:
     "Класс Question"
-    def __init__(self, question, complexity, right_answer, get_question=False, person_answer=None):
+    def __init__(self, question, complexity, right_answer):
         self.question = question
         self.complexity = int(complexity)
         self.right_answer = right_answer
-        self.get_question = get_question
-        self.person_answer = person_answer
+        self.get_question = False
+        self.person_answer = None
         self.points = self.complexity * 10
 
     def get_points(self):
@@ -77,17 +82,23 @@ class Question:
         return negative_feedback
 
 
+# Получаем данные о вопросах из файла question.json
 json_data = get_json_data('question.json')
 
-questions = []
+# Создаем пустой словарь для хранения экземпляров класса Question
+questions_list = []
 
+# Создаем экземпляры класса Question и записываем в словарь
 for question_dict in json_data:
-    questions.append(Question(question_dict['q'], question_dict['d'], question_dict['a']))
+    questions_list.append(Question(question_dict['q'], question_dict['d'], question_dict['a']))
 
-random.shuffle(questions)
+# Перемешиваем экземпляры класса Question в случайном порядку
+random.shuffle(questions_list)
 
-for question_object in questions:
+# Задаем вопросы, записываем результаты и выводим результат ответа
+for question_object in questions_list:
     print(question_object.build_question())
+    question_object.get_question = True
     question_object.person_answer = input()
     if question_object.is_correct():
         print(question_object.build_positive_feedback())
@@ -95,4 +106,5 @@ for question_object in questions:
         print(question_object.build_negative_feedback())
     print()
 
-print(get_statistic(questions))
+# Выводим финальную статистику
+print(get_statistic(questions_list))
